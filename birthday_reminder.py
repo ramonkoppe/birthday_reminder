@@ -3,7 +3,7 @@ import sqlite3
 
 from tabulate import tabulate
 
-# DATABASE INITIALIZATION & CONNECTION ||
+# DATABASE INITIALIZATION & CONNECTION
 
 connection = sqlite3.connect("birthdays.db")
 cursor = connection.cursor()
@@ -29,9 +29,7 @@ cursor.execute("""
 print("\nDatabase and table created successfully!")
 
 
-# CRUD FUNCTIONS ||
-
-# --- Input Retrieval + LOOP for Invalid Choices ---
+# CRUD FUNCTIONS
 
 
 def get_choice(prompt, choices):
@@ -48,9 +46,6 @@ def get_choice(prompt, choices):
             print("Invalid choice! Try again...")
 
             continue
-
-
-# --- Input Collection Functions ---
 
 
 def get_name():
@@ -184,9 +179,6 @@ def get_reminders():
     return reminders
 
 
-# --- Calling all the functions + Inserting Data into Database ---
-
-
 def list_single_row(rowid):
 
     try:
@@ -253,7 +245,6 @@ def add_birthday():
         "Hi! (•◡•) / \nPlease, provide the information necessary for the new contact.\n"
     )
 
-    # --- CALLING the functions & CREATING the values variables ---
     name = get_name()
     month = get_month()
     day = get_day(month)
@@ -262,20 +253,15 @@ def add_birthday():
     guidelines = get_guidelines()
     reminders = get_reminders()
 
-    # --- Display SUCCESS message and report NEXT STEPS ---
     print(
         f"Success! Attempting the insertion of the information provided into the database with the following paramenters: \n\nName: {name}; \nMonth: {month}; \nDay: {day}; \nnumber: {number}; \nNotes: {notes}; \nguidelines: {guidelines}; \nReminders: {reminders}.\n"
     )
 
-    # --- Create INSERT & DATA variables ---
     sql = "INSERT INTO birthdays (name, month, day, number, notes, guidelines, reminders) VALUES (?, ?, ?, ?, ?, ?, ?)"
-
-    # WHILE LOOP: First TRY/EXCEPT (Duplicates + ANY Error handling)
 
     while True:
         values = (name, month, day, number, notes, guidelines, reminders)
 
-        # 1st TRY (ORIGINAL VALUES)
         try:
             cursor.execute(sql, values)
             connection.commit()
@@ -288,7 +274,6 @@ def add_birthday():
 
             break
 
-        # 1st ERROR (DUPLICATES)
         except sqlite3.IntegrityError as e:
             connection.rollback()
 
@@ -352,9 +337,6 @@ def add_birthday():
                 break
 
 
-# --- Current Database Display ---
-
-
 def list_database(order_by):
 
     order = "DESC" if order_by.strip().upper() == "DESC" else "ASC"
@@ -390,9 +372,6 @@ def list_database(order_by):
             maxcolwidths=[None, None, None, None, None, 50, 80, None, None, None, None],
         )
     )
-
-
-# --- Check ID function to only accept valid IDs when searching for a row in the DB ---
 
 
 def check_id():
@@ -454,9 +433,6 @@ def check_id():
                 return
 
 
-# BIRTHDAY LOGIC (upcoming birthdays, sending reminders, days until, etc.) ||
-
-
 def upcoming_birthdays(day_range=30):
 
     today = datetime.date.today()
@@ -488,32 +464,19 @@ def upcoming_birthdays(day_range=30):
                 print(
                     f"Found [ID:{contact_id}] {name}, ({month}/{day}) with {days_left} days left. \n"
                 )
-                return (contact_id, name, days_left, reminders_list)
+
+            for x in reminders_list:
+                if x > days_left:
+                    reminders_list.remove(x)
+                else:
+                    pass
+
+            return (contact_id, name, days_left, reminders_list)
 
 
-contact_id = upcoming_birthdays()
-name = upcoming_birthdays()
-days_left = upcoming_birthdays()
-reminders_list = upcoming_birthdays()
+contact_id, name, days_left, active_reminders = upcoming_birthdays()
 
-
-def reminder_filter():
-
-    for x in reminders_list:
-        if x > days_left:
-            reminders_list.delete(x)
-        else:
-            pass
-    return reminders_list
-
-
-active_reminders = reminder_filter()
-
-
-# USER INTERACTION (CLI Menu) ||
-
-# --- Menu Build ---
-
+# USER INTERACTION (CLI Menu)
 
 while True:
     print("""
@@ -614,7 +577,6 @@ while True:
 
             sql = f"UPDATE birthdays SET {column} = ? WHERE ID = ?"
 
-            # As ID becomes a TUPLE (as the entire row from the ID is linked (as a tuple) to this variable), we use [0] to get only the ID part of the tuple
             values = (change, id)
 
             try:
@@ -700,4 +662,4 @@ while True:
             continue
 
 
-# MAIN / SCHEDULER ENTRYPOINT ||
+# MAIN / SCHEDULER ENTRYPOINT
