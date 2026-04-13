@@ -467,9 +467,9 @@ def upcoming_birthdays(day_range=30):
         print(f"{type(row)}, {row}")
         contact_id, name, month, day, reminders = row
 
-        active_reminders = []
+        reminders_list = []
         for num in reminders.split(","):
-            active_reminders.append(int(num))
+            reminders_list.append(int(num))
 
         try:
             profile = datetime.date(today.year, int(month), int(day))
@@ -484,11 +484,30 @@ def upcoming_birthdays(day_range=30):
         else:
             days_left = (profile - today).days
 
-            if days_left <= day_range and (days_left <= x for x in active_reminders):
+            if days_left <= day_range:
                 print(
                     f"Found [ID:{contact_id}] {name}, ({month}/{day}) with {days_left} days left. \n"
                 )
-                return (contact_id, name, days_left, active_reminders)
+                return (contact_id, name, days_left, reminders_list)
+
+
+contact_id = upcoming_birthdays()
+name = upcoming_birthdays()
+days_left = upcoming_birthdays()
+reminders_list = upcoming_birthdays()
+
+
+def reminder_filter():
+
+    for x in reminders_list:
+        if x > days_left:
+            reminders_list.delete(x)
+        else:
+            pass
+    return reminders_list
+
+
+active_reminders = reminder_filter()
 
 
 # USER INTERACTION (CLI Menu) ||
