@@ -48,6 +48,20 @@ def get_choice(prompt, choices):
             continue
 
 
+def get_integer(prompt):
+
+    while True:
+        try:
+            user_input = input(prompt)
+            cleaned_input = int(user_input.strip())
+
+            return cleaned_input
+
+        except Exception:
+            print("Invalid integer! Try again...")
+            continue
+
+
 def get_name():
 
     while True:
@@ -433,14 +447,13 @@ def check_id():
                 return
 
 
-def upcoming_birthdays(day_range=30):
+def upcoming_birthdays(switcher=False, day_range=30):
 
     today = datetime.date.today()
     cursor.execute("SELECT ID, name, month, day, reminders FROM birthdays")
     rows = cursor.fetchall()
 
     for row in rows:
-        print(f"{type(row)}, {row}")
         contact_id, name, month, day, reminders = row
 
         reminders_list = []
@@ -460,21 +473,24 @@ def upcoming_birthdays(day_range=30):
         else:
             days_left = (profile - today).days
 
-            if days_left <= day_range:
+            if not switcher and days_left <= day_range:
                 print(
-                    f"Found [ID:{contact_id}] {name}, ({month}/{day}) with {days_left} days left. \n"
+                    f"[ID: {contact_id}] {name}, ({month}/{day}) with {days_left} days left. \n"
                 )
+                return (contact_id, name, days_left)
 
-            for x in reminders_list:
-                if x > days_left:
-                    reminders_list.remove(x)
-                else:
-                    pass
+            elif not switcher and days_left > day_range:
+                print("\nNo upcoming birthdays found!")
 
-            return (contact_id, name, days_left, reminders_list)
+            elif switcher and days_left <= day_range:
+                for x in reminders_list:
+                    if x > days_left:
+                        reminders_list.remove(x)
+                    else:
+                        pass
 
+                    return (contact_id, name, days_left, reminders_list)
 
-contact_id, name, days_left, active_reminders = upcoming_birthdays()
 
 # USER INTERACTION (CLI Menu)
 
@@ -498,7 +514,18 @@ while True:
         continue
 
     elif choice == "2":
-        upcoming_birthdays()
+        print(
+            "\nWould you like to choose a range [y/n]? \nIf no range is provided, the default [30 days] is applied."
+        )
+
+        choose_range = get_choice("> ", ["y", "n"])
+        if choose_range == "n":
+            upcoming_birthdays()
+        else:
+            print("\nChoose a range...")
+
+            get_range = get_integer("> ")
+            upcoming_birthdays(day_range=get_range)
 
     elif choice == "3":
         print("Are you sure? ( y / n )\n")
